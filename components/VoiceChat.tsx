@@ -1,37 +1,194 @@
 "use client";
 
+import { toast } from "hooks/use-toast";
 import React, { useState, useRef, useEffect } from "react";
 
-import {
-  Mic,
-  MicOff,
-  Send,
-  Square,
-  User,
-  Bot,
-  CheckCircle,
-  Circle,
-} from "lucide-react";
-import { toast } from "hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
+// Icon Components
+const Mic = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+  </svg>
+);
+
+const Send = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+  </svg>
+);
+
+const Square = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" strokeWidth={2} />
+  </svg>
+);
+
+const User = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+  </svg>
+);
+
+const Bot = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
+
+const CheckCircle = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
+const Circle = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <circle cx="12" cy="12" r="10" strokeWidth={2} />
+  </svg>
+);
+
+const List = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+  </svg>
+);
+
+const Plus = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+  </svg>
+);
+
+const Trash2 = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
+const Edit = ({ className }: { className?: string }) => (
+  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+  </svg>
+);
+// Simple UI Components
+const Button = ({ children, onClick, disabled, variant = "default", size = "default", className = "" }: any) => {
+  const variants: any = {
+    default: "bg-blue-600 hover:bg-blue-700 text-white",
+    outline: "border border-gray-300 hover:bg-gray-100",
+    destructive: "bg-red-600 hover:bg-red-700 text-white"
+  };
+
+  const sizes: any = {
+    sm: "px-3 py-2 text-sm",
+    default: "px-4 py-2"
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`rounded-md font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+    >
+      {children}
+    </button>
+  );
+};
+
+const Textarea = React.forwardRef(({ value, onChange, onKeyPress, placeholder, disabled, className = "" }: any, ref: any) => (
+  <textarea
+    ref={ref}
+    value={value}
+    onChange={onChange}
+    onKeyPress={onKeyPress}
+    placeholder={placeholder}
+    disabled={disabled}
+    className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
+  />
+));
+
+const Select = ({ value, onValueChange, children }: any) => {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onValueChange(e.target.value)}
+      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      {React.Children.map(children, (child: any) => {
+        if (child?.props?.children) {
+          return React.Children.map(child.props.children, (option: any) => (
+            <option key={option.props.value} value={option.props.value}>
+              {option.props.children}
+            </option>
+          ));
+        }
+        return null;
+      })}
+    </select>
+  );
+};
+
+const SelectTrigger = ({ children, className }: any) => <>{children}</>;
+const SelectContent = ({ children }: any) => <>{children}</>;
+const SelectItem = ({ value, children }: any) => <option value={value}>{children}</option>;
+const SelectValue = () => null;
+
+const Card = ({ children, className = "" }: any) => (
+  <div className={`bg-white rounded-lg shadow-md border border-gray-200 ${className}`}>
+    {children}
+  </div>
+);
+
+const CardContent = ({ children, className = "" }: any) => (
+  <div className={`p-4 ${className}`}>
+    {children}
+  </div>
+);
 
 interface Message {
   id: string;
   type: "user" | "assistant";
   content: string;
   timestamp: Date;
-  todos?: Array<{ text: string; checked: boolean }>;
+  todos?: Array<{ id?: string; text: string; checked: boolean }>;
   title?: string;
   language?: string;
   isTranscribing?: boolean;
   notionUrl?: string;
+  intent?: VoiceIntent;
+  action?: string;
 }
 
 interface Todo {
+  id?: string;
   text: string;
   checked: boolean;
+}
+
+interface VoiceIntent {
+  action: 'create' | 'complete' | 'update' | 'delete' | 'list';
+  confidence: number;
+  todoText?: string;
+  targetTodo?: string;
+  newText?: string;
+}
+
+interface VoiceCommandResponse {
+  success: boolean;
+  transcribedText?: string;
+  intent?: VoiceIntent;
+  result?: {
+    success: boolean;
+    message: string;
+    todoId?: string;
+    todos?: Todo[];
+    stats?: {
+      total: number;
+      completed: number;
+      incomplete: number;
+    };
+  };
+  pageId?: string;
+  needsSetup?: boolean;
+  error?: string;
 }
 
 const LANGUAGES = [
@@ -51,29 +208,32 @@ const LANGUAGES = [
 
 interface VoiceChatProps {
   onNotionPageCreated?: (pageUrl: string) => void;
+  userId?: string;
+  currentPageId?: string;
 }
 
-export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
+export default function VoiceChat({
+  onNotionPageCreated,
+  userId = "default-user",
+  currentPageId
+}: VoiceChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
   const [language, setLanguage] = useState("en");
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
-    null
-  );
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
   const [silenceTimer, setSilenceTimer] = useState<NodeJS.Timeout | null>(null);
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
-    null
-  );
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
   const [currentTranscript, setCurrentTranscript] = useState("");
-  const [transcribingMessageId, setTranscribingMessageId] = useState<
-    string | null
-  >(null);
+  const [transcribingMessageId, setTranscribingMessageId] = useState<string | null>(null);
+  const [activePageId, setActivePageId] = useState<string | undefined>(currentPageId);
+  const [isCommandMode, setIsCommandMode] = useState(true); // Toggle between command mode and create mode
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const animationFrameRef = useRef<number>();
@@ -91,6 +251,10 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    setActivePageId(currentPageId);
+  }, [currentPageId]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -117,9 +281,7 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
     const dataArray = new Uint8Array(bufferLength);
     analyser.getByteFrequencyData(dataArray);
 
-    // Calculate average volume
-    const average =
-      dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
+    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength;
     const decibels = 20 * Math.log10(average / 255);
 
     const isSpeaking = decibels > SILENCE_THRESHOLD;
@@ -128,13 +290,11 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
 
     if (isSpeaking) {
       setIsListening(true);
-      // Clear any existing silence timer
       if (silenceTimer) {
         clearTimeout(silenceTimer);
         setSilenceTimer(null);
       }
     } else if (isListening && recordingDuration > MIN_RECORDING_TIME) {
-      // Start silence timer if not already started
       if (!silenceTimer) {
         const timer = setTimeout(() => {
           stopRecording();
@@ -143,13 +303,11 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
       }
     }
 
-    // Continue analyzing
     animationFrameRef.current = requestAnimationFrame(analyzeAudio);
   };
 
   const startRecording = async () => {
     try {
-      // Check if browser supports speech recognition
       const SpeechRecognition =
         (window as any).SpeechRecognition ||
         (window as any).webkitSpeechRecognition;
@@ -157,15 +315,13 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
       if (!SpeechRecognition) {
         toast({
           title: "Speech Recognition Not Supported",
-          description:
-            "Your browser does not support real-time transcription. Recording will still work.",
+          description: "Your browser does not support real-time transcription. Recording will still work.",
           variant: "destructive",
         });
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Set up audio analysis
       const audioCtx = new ((window as any).AudioContext ||
         (window as any).webkitAudioContext)();
       const source = audioCtx.createMediaStreamSource(stream);
@@ -178,14 +334,12 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
       setAudioContext(audioCtx);
       setAnalyser(analyserNode);
 
-      // Set up speech recognition for real-time transcription
       if (SpeechRecognition) {
         const speechRecognition = new SpeechRecognition();
         speechRecognition.continuous = true;
         speechRecognition.interimResults = true;
         speechRecognition.lang = language;
 
-        // Create a transcribing message
         const transcribingMessageId = Date.now().toString();
         const transcribingMessage: Message = {
           id: transcribingMessageId,
@@ -215,7 +369,6 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
           const fullTranscript = finalTranscript + interimTranscript;
           setCurrentTranscript(fullTranscript);
 
-          // Update the transcribing message
           setMessages((prev) =>
             prev.map((msg) =>
               msg.id === transcribingMessageId
@@ -241,8 +394,7 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
         }
       };
 
-      recorder.onstop = () => {
-        // Clean up audio analysis
+      recorder.onstop = async () => {
         if (animationFrameRef.current) {
           cancelAnimationFrame(animationFrameRef.current);
         }
@@ -258,6 +410,12 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
           clearTimeout(silenceTimer);
           setSilenceTimer(null);
         }
+
+        // Process the audio
+        if (audioChunks.length > 0) {
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+          await processAudioCommand(audioBlob);
+        }
       };
 
       setMediaRecorder(recorder);
@@ -266,13 +424,13 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
       recorder.start();
       setIsRecording(true);
 
-      // Start audio analysis
       analyzeAudio();
 
       toast({
-        title: "Recording started",
-        description:
-          "Speak your todo list... Recording will stop automatically when you finish.",
+        title: isCommandMode ? "Voice Command Mode" : "Create Todo Mode",
+        description: isCommandMode
+          ? "Say a command like 'add buy milk', 'complete first', or 'show todos'"
+          : "Speak your todo list... Recording will stop automatically when you finish.",
       });
     } catch (error) {
       toast({
@@ -293,43 +451,132 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
       setIsRecording(false);
       setIsProcessing(true);
 
-      // Clean up timers
       if (silenceTimer) {
         clearTimeout(silenceTimer);
         setSilenceTimer(null);
       }
 
-      // Finalize the transcribing message
       if (transcribingMessageId) {
         setMessages((prev) =>
           prev.map((msg) =>
             msg.id === transcribingMessageId
               ? {
-                  ...msg,
-                  isTranscribing: false,
-                  content: currentTranscript || "🎤 Voice recording processed",
-                }
+                ...msg,
+                isTranscribing: false,
+                content: currentTranscript || "🎤 Processing voice command...",
+              }
               : msg
           )
         );
         setTranscribingMessageId(null);
       }
 
-      // Process the transcribed text
-      setTimeout(() => {
-        processTranscribedText(currentTranscript);
-      }, 1000);
+      // Directly process the command with just the transcript
+      if (currentTranscript && isCommandMode) {
+        processVoiceCommand(currentTranscript);
+      } else if (currentTranscript && !isCommandMode) {
+        processCreateTodoPage(currentTranscript);
+      }
+
+      setIsProcessing(false);
+      setAudioChunks([]);
+      setCurrentTranscript("");
     }
   };
 
-  const processTranscribedText = async (transcript: string) => {
+  const processAudioCommand = async (audioBlob: Blob) => {
+    try {
+      // If we have transcript from speech recognition, use it directly
+      if (isCommandMode && currentTranscript) {
+        // Just send the text without audio if we have it
+        await processVoiceCommand(currentTranscript);
+        return;
+      }
+
+      // Otherwise try to convert audio
+      const reader = new FileReader();
+      reader.readAsDataURL(audioBlob);
+
+      reader.onloadend = async () => {
+        const base64Audio = reader.result?.toString().split(',')[1];
+
+        if (isCommandMode) {
+          // Send with audio buffer if available
+          await processVoiceCommand(currentTranscript || "", base64Audio);
+        } else {
+          await processCreateTodoPage(currentTranscript);
+        }
+      };
+    } catch (error) {
+      console.error("Error processing audio:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process voice recording.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+      setAudioChunks([]);
+      setCurrentTranscript("");
+    }
+  };
+
+  const processVoiceCommand = async (text: string, audioBuffer?: string) => {
+    try {
+      const response = await fetch(
+        "http://localhost:9999/api/v1/voice/command",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            text: text || undefined,
+            audioBuffer,
+            language,
+            userId,
+            currentPageId: activePageId,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to process voice command");
+      }
+
+      const data: VoiceCommandResponse = await response.json();
+
+      if (data.success) {
+        handleVoiceCommandResponse(data);
+      } else if (data.needsSetup) {
+        // Need to create a page first
+        const assistantMessage: Message = {
+          id: Date.now().toString(),
+          type: "assistant",
+          content: data.result?.message || "No todo list found. Please create one first by switching to Create Mode.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+      } else {
+        throw new Error(data.error || "Command failed");
+      }
+    } catch (error) {
+      console.error("Voice command error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to process voice command.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const processCreateTodoPage = async (transcript: string) => {
     if (!transcript.trim()) {
       setIsProcessing(false);
       return;
     }
 
     try {
-      // Send transcribed text to API
       const response = await fetch(
         "http://localhost:9999/api/v1/create-todo-page",
         {
@@ -347,7 +594,7 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
 
       if (response.ok) {
         const data = await response.json();
-        handleApiResponse("Voice Tasks", data.todos || [], data.notionUrl);
+        handleApiResponse("Voice Tasks", data.todos || [], data.notionUrl, data.pageId);
       } else {
         throw new Error("Failed to create todo");
       }
@@ -357,10 +604,51 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
         description: "Failed to process voice recording.",
         variant: "destructive",
       });
-    } finally {
-      setIsProcessing(false);
-      setAudioChunks([]);
-      setCurrentTranscript("");
+    }
+  };
+
+  const handleVoiceCommandResponse = (data: VoiceCommandResponse) => {
+    const { intent, result, pageId, transcribedText } = data;
+
+    if (pageId) {
+      setActivePageId(pageId);
+    }
+
+    // Create assistant message based on the action
+    let messageContent = result?.message || "Command processed";
+    let todos: Todo[] | undefined;
+
+    if (intent?.action === 'list' && result?.todos) {
+      todos = result.todos;
+      messageContent = `${result.message}\n${result.stats ? `(${result.stats.incomplete} pending, ${result.stats.completed} completed)` : ''}`;
+    }
+
+    const assistantMessage: Message = {
+      id: Date.now().toString(),
+      type: "assistant",
+      content: messageContent,
+      timestamp: new Date(),
+      intent,
+      action: intent?.action,
+      todos,
+    };
+
+    setMessages((prev) => [...prev, assistantMessage]);
+
+    // Show appropriate icon based on action
+    const actionIcons = {
+      create: "✅ Added",
+      complete: "☑️ Completed",
+      update: "✏️ Updated",
+      delete: "🗑️ Deleted",
+      list: "📋 Listed",
+    };
+
+    if (intent?.action && result?.success) {
+      toast({
+        title: actionIcons[intent.action] || "Success",
+        description: result.message,
+      });
     }
   };
 
@@ -380,26 +668,32 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
     setIsProcessing(true);
 
     try {
-      const response = await fetch(
-        "http://localhost:9999/api/v1/create-todo-page",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            title: "Quick Tasks",
-            content: currentInput,
-            language,
-          }),
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        handleApiResponse("Quick Tasks", data.todos || [], data.notionUrl);
+      if (isCommandMode) {
+        // Process as voice command
+        await processVoiceCommand(currentInput);
       } else {
-        throw new Error("Failed to create todo");
+        // Process as todo page creation
+        const response = await fetch(
+          "http://localhost:9999/api/v1/create-todo-page",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title: "Quick Tasks",
+              content: currentInput,
+              language,
+            }),
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          handleApiResponse("Quick Tasks", data.todos || [], data.notionUrl, data.pageId);
+        } else {
+          throw new Error("Failed to create todo");
+        }
       }
     } catch (error) {
       toast({
@@ -415,7 +709,8 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
   const handleApiResponse = (
     title: string,
     todos: Todo[],
-    notionUrl?: string
+    notionUrl?: string,
+    pageId?: string
   ) => {
     const assistantMessage: Message = {
       id: (Date.now() + 1).toString(),
@@ -429,6 +724,10 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
     };
 
     setMessages((prev) => [...prev, assistantMessage]);
+
+    if (pageId) {
+      setActivePageId(pageId);
+    }
 
     if (notionUrl && onNotionPageCreated) {
       onNotionPageCreated(notionUrl);
@@ -463,6 +762,23 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
     }
   };
 
+  const getActionIcon = (action?: string) => {
+    switch (action) {
+      case 'create':
+        return <Plus className="h-3 w-3" />;
+      case 'complete':
+        return <CheckCircle className="h-3 w-3" />;
+      case 'update':
+        return <Edit className="h-3 w-3" />;
+      case 'delete':
+        return <Trash2 className="h-3 w-3" />;
+      case 'list':
+        return <List className="h-3 w-3" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -473,22 +789,36 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
               Voice Chat
             </h2>
             <p className="text-sm text-muted-foreground">
-              Create todo lists with voice or text
+              {isCommandMode ? "Voice commands for todos" : "Create todo lists with voice or text"}
             </p>
           </div>
-          <Select value={language} onValueChange={setLanguage}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {LANGUAGES.map((lang) => (
-                <SelectItem key={lang.code} value={lang.code}>
-                  {lang.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isCommandMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setIsCommandMode(!isCommandMode)}
+            >
+              {isCommandMode ? "Command Mode" : "Create Mode"}
+            </Button>
+            <Select value={language} onValueChange={setLanguage}>
+              <SelectTrigger className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {LANGUAGES.map((lang) => (
+                  <SelectItem key={lang.code} value={lang.code}>
+                    {lang.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        {activePageId && (
+          <div className="mt-2 text-xs text-muted-foreground">
+            Active Page: {activePageId.slice(0, 8)}...
+          </div>
+        )}
       </div>
 
       {/* Messages */}
@@ -497,31 +827,57 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
           <div className="text-center py-12">
             <Mic className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">
-              Start creating your todo list
+              {isCommandMode ? "Voice Command Mode" : "Start creating your todo list"}
             </h3>
-            <p className="text-muted-foreground">
-              Use voice recording, type your tasks, or speak naturally about
-              what you need to do.
+            <p className="text-muted-foreground mb-4">
+              {isCommandMode
+                ? "Use commands like: 'add buy groceries', 'complete first todo', 'show all todos'"
+                : "Use voice recording, type your tasks, or speak naturally about what you need to do."}
             </p>
+            {isCommandMode && (
+              <Card className="max-w-md mx-auto bg-gray-900 border-gray-700">
+                <CardContent className="pt-6">
+                  <div className="space-y-2 text-sm text-left">
+                    <div className="flex items-center gap-2">
+                      <Plus className="h-4 w-4 text-green-400" />
+                      <span className="text-gray-200">"Add [task]" - Create new todo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="h-4 w-4 text-blue-400" />
+                      <span className="text-gray-200">"Complete [first/last/task name]" - Mark as done</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Edit className="h-4 w-4 text-yellow-400" />
+                      <span className="text-gray-200">"Update [task] to [new text]" - Edit todo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="h-4 w-4 text-red-400" />
+                      <span className="text-gray-200">"Delete [task]" - Remove todo</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <List className="h-4 w-4 text-purple-400" />
+                      <span className="text-gray-200">"Show todos" - List all tasks</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         )}
 
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-3 ${
-              message.type === "user" ? "justify-end" : "justify-start"
-            }`}
+            className={`flex gap-3 ${message.type === "user" ? "justify-end" : "justify-start"
+              }`}
           >
             <div
-              className={`flex gap-3 max-w-3xl ${
-                message.type === "user" ? "flex-row-reverse" : "flex-row"
-              }`}
+              className={`flex gap-3 max-w-3xl ${message.type === "user" ? "flex-row-reverse" : "flex-row"
+                }`}
             >
               <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.type === "user" ? "bg-primary" : "bg-muted"
-                }`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${message.type === "user" ? "bg-primary" : "bg-muted"
+                  }`}
               >
                 {message.type === "user" ? (
                   <User className="h-4 w-4 text-primary-foreground" />
@@ -531,16 +887,22 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
               </div>
 
               <div
-                className={`rounded-2xl px-4 py-3 ${
-                  message.type === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground"
-                }`}
-              >
-                <p
-                  className={`text-sm ${
-                    message.isTranscribing ? "typewriter" : ""
+                className={`rounded-2xl px-4 py-3 ${message.type === "user"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-muted text-muted-foreground"
                   }`}
+              >
+                {message.action && (
+                  <div className="flex items-center gap-1 mb-1 opacity-75">
+                    {getActionIcon(message.action)}
+                    <span className="text-xs font-medium capitalize">
+                      {message.action} Action
+                    </span>
+                  </div>
+                )}
+                <p
+                  className={`text-sm ${message.isTranscribing ? "typewriter" : ""
+                    }`}
                 >
                   {message.content}
                   {message.isTranscribing && (
@@ -550,10 +912,12 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
 
                 {message.todos && (
                   <div className="mt-3 space-y-2">
-                    <div className="text-xs font-medium opacity-75 mb-2">
-                      {message.title} •{" "}
-                      {LANGUAGES.find((l) => l.code === message.language)?.name}
-                    </div>
+                    {message.title && (
+                      <div className="text-xs font-medium opacity-75 mb-2">
+                        {message.title} •{" "}
+                        {LANGUAGES.find((l) => l.code === message.language)?.name}
+                      </div>
+                    )}
                     {message.todos.map((todo, index) => (
                       <div
                         key={index}
@@ -570,9 +934,8 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
                           )}
                         </button>
                         <span
-                          className={`text-sm ${
-                            todo.checked ? "line-through opacity-75" : ""
-                          }`}
+                          className={`text-sm ${todo.checked ? "line-through opacity-75" : ""
+                            }`}
                         >
                           {todo.text}
                         </span>
@@ -611,9 +974,13 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
             <Textarea
               ref={textareaRef}
               value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
+              onChange={(e: any) => setInputText(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type your todo list or describe what you need to do..."
+              placeholder={
+                isCommandMode
+                  ? "Type a command like 'add buy milk' or 'show todos'..."
+                  : "Type your todo list or describe what you need to do..."
+              }
               className="min-h-[44px] max-h-32 resize-none"
               disabled={isProcessing || isRecording}
             />
@@ -648,11 +1015,10 @@ export default function VoiceChat({ onNotionPageCreated }: VoiceChatProps) {
         {isRecording && (
           <div className="mt-2 flex items-center gap-2 text-sm text-destructive">
             <div
-              className={`w-2 h-2 rounded-full ${
-                isListening
-                  ? "bg-green-500 animate-pulse"
-                  : "bg-destructive animate-pulse"
-              }`}
+              className={`w-2 h-2 rounded-full ${isListening
+                ? "bg-green-500 animate-pulse"
+                : "bg-destructive animate-pulse"
+                }`}
             ></div>
             {isListening
               ? "Listening & transcribing..."
