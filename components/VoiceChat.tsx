@@ -3,6 +3,16 @@
 import { toast } from "hooks/use-toast";
 import React, { useState, useRef, useEffect } from "react";
 
+/**
+ * Play a Base‑64‑encoded audio string (data *without* the “data:audio/…” prefix).
+ * 
+ */
+interface VoiceCommandResponse {
+  /* …existing fields… */
+  audioResponse?: string;   // ← Base‑64 WAV (or MP3) from the API
+}
+
+
 // Icon Components
 const Mic = ({ className }: { className?: string }) => (
   <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -524,7 +534,7 @@ export default function VoiceChat({
   const processVoiceCommand = async (text: string, audioBuffer?: string) => {
     try {
       const response = await fetch(
-        "http://localhost:9999/api/v1/voice/command",
+        "http://localhost:9999/api/v1/command",
         {
           method: "POST",
           headers: {
@@ -536,6 +546,9 @@ export default function VoiceChat({
             language,
             userId,
             currentPageId: activePageId,
+            returnAudio: true, // ✅ Ensure this is true
+            voiceId: "EXAVITQu4vr4xnSDxMaL", // optional
+            modelId: "eleven_turbo_v2",     // optional
           }),
         }
       );
@@ -545,6 +558,16 @@ export default function VoiceChat({
       }
 
       const data: VoiceCommandResponse = await response.json();
+
+      console.log(data, "___data_audioResponse")
+
+      if (data.audioResponse) {
+        const audio = new Audio(`data:audio/mpeg;base64,${data.audioResponse}`);
+        audio.play().catch(err => {
+          console.error("Failed to play audio:", err);
+        });
+      }
+
 
       if (data.success) {
         handleVoiceCommandResponse(data);
