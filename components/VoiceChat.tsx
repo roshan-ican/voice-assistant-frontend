@@ -3,11 +3,17 @@
 import { useVoiceWebSocket } from "hooks/useVoiceWebSocket";
 import React, { useState, useRef, useEffect } from "react";
 
-// Voice Visualizer Component - Modern Orb Style
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+// Voice Visualizer Component - Mobile Optimized
 const VoiceOrb = ({
   isListening,
   isRecording,
-  amplitude = 0,
 }: {
   isListening: boolean;
   isRecording: boolean;
@@ -27,7 +33,7 @@ const VoiceOrb = ({
   }, [isListening]);
 
   return (
-    <div className="relative flex items-center justify-center w-48 h-48">
+    <div className="relative flex items-center justify-center w-32 h-32 sm:w-48 sm:h-48">
       {/* Outer glow rings */}
       {isRecording && (
         <>
@@ -42,20 +48,20 @@ const VoiceOrb = ({
           isListening ? "animate-pulse" : ""
         }`}
         style={{
-          width: `${120 * pulseScale}px`,
-          height: `${120 * pulseScale}px`,
+          width: `${80 * pulseScale}px`,
+          height: `${80 * pulseScale}px`,
         }}
       />
 
       {/* Inner core orb */}
       <div
-        className={`relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 
+        className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 
         ${isRecording ? "scale-100" : "scale-90"} 
         transition-all duration-500 shadow-2xl`}
         style={{
           boxShadow: isListening
-            ? "0 0 60px rgba(139, 92, 246, 0.5), 0 0 100px rgba(59, 130, 246, 0.3)"
-            : "0 10px 40px rgba(0, 0, 0, 0.3)",
+            ? "0 0 40px rgba(139, 92, 246, 0.5), 0 0 60px rgba(59, 130, 246, 0.3)"
+            : "0 8px 32px rgba(0, 0, 0, 0.3)",
         }}
       >
         {/* Animated gradient overlay */}
@@ -69,7 +75,7 @@ const VoiceOrb = ({
         {/* Center dot */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div
-            className={`w-3 h-3 rounded-full bg-white 
+            className={`w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-white 
             ${isListening ? "scale-150 opacity-100" : "scale-100 opacity-70"} 
             transition-all duration-200`}
           />
@@ -79,7 +85,7 @@ const VoiceOrb = ({
   );
 };
 
-// Waveform bars visualization
+// Waveform bars visualization - Mobile Optimized
 const WaveformBars = ({ isListening }: { isListening: boolean }) => {
   const [bars, setBars] = useState([
     0.3, 0.5, 0.8, 0.6, 0.9, 0.7, 0.4, 0.6, 0.5,
@@ -88,22 +94,22 @@ const WaveformBars = ({ isListening }: { isListening: boolean }) => {
   useEffect(() => {
     if (isListening) {
       const interval = setInterval(() => {
-        setBars(bars.map(() => 0.2 + Math.random() * 0.8));
+        setBars((prevBars) => prevBars.map(() => 0.2 + Math.random() * 0.8));
       }, 100);
       return () => clearInterval(interval);
     } else {
-      setBars(bars.map(() => 0.3));
+      setBars((prevBars) => prevBars.map(() => 0.3));
     }
   }, [isListening]);
 
   return (
-    <div className="flex items-center justify-center gap-1 h-12">
+    <div className="flex items-center justify-center gap-1 h-8 sm:h-12">
       {bars.map((height, i) => (
         <div
           key={i}
-          className="w-1 bg-gradient-to-t from-blue-400 to-purple-500 rounded-full transition-all duration-150"
+          className="w-0.5 sm:w-1 bg-gradient-to-t from-blue-400 to-purple-500 rounded-full transition-all duration-150"
           style={{
-            height: `${height * 48}px`,
+            height: `${height * (window.innerWidth < 640 ? 32 : 48)}px`,
             opacity: isListening ? 1 : 0.3,
           }}
         />
@@ -220,12 +226,27 @@ const Circle = ({ className }: { className?: string }) => (
   </svg>
 );
 
+interface ToastProps {
+  title: string;
+  description: string;
+  variant?: "default" | "destructive";
+}
+
 // Mock toast for demo
-const toast = ({ title, description, variant }: any) => {
+const toast = ({ title, description }: ToastProps) => {
   console.log(`Toast: ${title} - ${description}`);
 };
 
-// Simple UI Components
+// Mobile-Friendly UI Components
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  disabled?: boolean;
+  variant?: "default" | "outline" | "ghost" | "destructive";
+  size?: "sm" | "default" | "lg";
+  className?: string;
+}
+
 const Button = ({
   children,
   onClick,
@@ -233,36 +254,46 @@ const Button = ({
   variant = "default",
   size = "default",
   className = "",
-}: any) => {
-  const variants: any = {
+}: ButtonProps) => {
+  const variants: Record<string, string> = {
     default:
-      "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg",
-    outline: "border-2 border-gray-700 hover:bg-gray-800 text-gray-200",
-    ghost: "hover:bg-gray-800 text-gray-300",
-    destructive: "bg-red-600 hover:bg-red-700 text-white",
+      "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg active:scale-95",
+    outline:
+      "border-2 border-gray-700 hover:bg-gray-800 active:bg-gray-700 text-gray-200",
+    ghost: "hover:bg-gray-800 active:bg-gray-700 text-gray-300",
+    destructive: "bg-red-600 hover:bg-red-700 active:bg-red-800 text-white",
   };
 
-  const sizes: any = {
-    sm: "px-3 py-2 text-sm",
-    default: "px-4 py-2",
-    lg: "px-6 py-3",
+  const sizes: Record<string, string> = {
+    sm: "px-3 py-2 text-sm min-h-[40px]",
+    default: "px-4 py-2 min-h-[44px]",
+    lg: "px-6 py-3 min-h-[48px]",
   };
 
   return (
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`}
+      className={`rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation ${variants[variant]} ${sizes[size]} ${className}`}
     >
       {children}
     </button>
   );
 };
 
-const Textarea = React.forwardRef(
+interface TextareaProps {
+  value: string;
+  onChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onKeyPress: (event: React.KeyboardEvent<HTMLTextAreaElement>) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
   (
-    { value, onChange, onKeyPress, placeholder, disabled, className = "" }: any,
-    ref: any
+    { value, onChange, onKeyPress, placeholder, disabled, className = "" },
+    ref
   ) => (
     <textarea
       ref={ref}
@@ -271,10 +302,13 @@ const Textarea = React.forwardRef(
       onKeyPress={onKeyPress}
       placeholder={placeholder}
       disabled={disabled}
-      className={`w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none ${className}`}
+      className={`w-full px-3 py-3 sm:px-4 bg-gray-800 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed resize-none text-base ${className}`}
+      style={{ fontSize: "16px" }} // Prevent zoom on iOS
     />
   )
 );
+
+Textarea.displayName = "Textarea";
 
 interface Message {
   id: string;
@@ -315,18 +349,27 @@ interface VoiceCommandResponse {
   audioResponse?: string;
 }
 
-export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
+interface VoiceChatProps {
+  onNotionPageCreated?: (pageUrl: string) => void;
+  currentPageId?: string;
+}
+
+export default function VoiceChat({
+  onNotionPageCreated,
+  currentPageId,
+}: VoiceChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState("");
-  const [language, setLanguage] = useState("en");
+  const [language] = useState("en");
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(
     null
   );
-  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<any>(null);
+  const [recognition, setRecognition] = useState<SpeechRecognition | null>(
+    null
+  );
   const [currentTranscript, setCurrentTranscript] = useState("");
   const [transcribingMessageId, setTranscribingMessageId] = useState<
     string | null
@@ -339,7 +382,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const animationFrameRef = useRef<number>();
   const recordingStartTime = useRef<number>(0);
-  const silenceTimer = useRef<any>(null);
+  const silenceTimer = useRef<NodeJS.Timeout | null>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -351,21 +394,23 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
 
   // Cleanup on unmount
   useEffect(() => {
+    const currentAnimationFrame = animationFrameRef.current;
+    const currentRecognition = recognition;
+
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      if (currentAnimationFrame) {
+        cancelAnimationFrame(currentAnimationFrame);
       }
-      if (recognition) {
-        recognition.stop();
+      if (currentRecognition && currentRecognition.stop) {
+        currentRecognition.stop();
       }
     };
-  }, []);
+  }, [recognition]);
 
   const startRecording = async () => {
     try {
       const SpeechRecognition =
-        (window as any).SpeechRecognition ||
-        (window as any).webkitSpeechRecognition;
+        window.SpeechRecognition || window.webkitSpeechRecognition;
 
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -373,7 +418,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       setShowVoiceModal(true);
 
       if (SpeechRecognition) {
-        const speechRecognition = new SpeechRecognition();
+        const speechRecognition: SpeechRecognition = new SpeechRecognition();
         speechRecognition.continuous = true;
         speechRecognition.interimResults = true;
         speechRecognition.lang = language;
@@ -391,7 +436,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
         setTranscribingMessageId(transcribingMessageId);
         setCurrentTranscript("");
 
-        speechRecognition.onresult = (event: any) => {
+        speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
           let finalTranscript = "";
           let interimTranscript = "";
 
@@ -433,10 +478,11 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       }
 
       const recorder = new MediaRecorder(stream);
+      const audioChunksTemp: Blob[] = [];
 
-      recorder.ondataavailable = (event) => {
+      recorder.ondataavailable = (event: BlobEvent) => {
         if (event.data.size > 0) {
-          setAudioChunks((prev) => [...prev, event.data]);
+          audioChunksTemp.push(event.data);
         }
       };
 
@@ -450,11 +496,10 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       };
 
       setMediaRecorder(recorder);
-      setAudioChunks([]);
       recordingStartTime.current = Date.now();
       recorder.start();
       setIsRecording(true);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Could not access microphone. Please check permissions.",
@@ -496,19 +541,34 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       }
 
       setIsProcessing(false);
-      setAudioChunks([]);
       setCurrentTranscript("");
     }
   };
 
   const { isConnected, sendVoiceCommand, onMessage } = useVoiceWebSocket();
 
+  interface ConnectedData {
+    message: string;
+  }
+
+  interface TranscriptionData {
+    text: string;
+  }
+
+  interface AudioData {
+    audio: string;
+  }
+
+  interface ErrorData {
+    message: string;
+  }
+
   useEffect(() => {
-    onMessage("connected", (data) => {
+    onMessage("connected", (data: ConnectedData) => {
       console.log("Connected:", data.message);
     });
 
-    onMessage("transcription", (data) => {
+    onMessage("transcription", (data: TranscriptionData) => {
       setCurrentTranscript(data.text);
       if (transcribingMessageId) {
         setMessages((prev) =>
@@ -521,7 +581,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       }
     });
 
-    onMessage("result", (data) => {
+    onMessage("result", (data: VoiceCommandResponse) => {
       handleVoiceCommandResponse({
         success: data.success,
         intent: data.intent,
@@ -532,7 +592,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       setIsProcessing(false);
     });
 
-    onMessage("audio", (data) => {
+    onMessage("audio", (data: AudioData) => {
       if (data.audio) {
         const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
         audio
@@ -541,7 +601,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
       }
     });
 
-    onMessage("error", (data) => {
+    onMessage("error", (data: ErrorData) => {
       toast({
         title: "Error",
         description: data.message,
@@ -594,10 +654,13 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
 
     if (pageId) {
       setActivePageId(pageId);
+      if (onNotionPageCreated) {
+        onNotionPageCreated(pageId);
+      }
     }
 
     let messageContent = result?.message || "Command processed";
-    let todos = result?.todos;
+    const todos = result?.todos;
 
     if (intent?.action === "list" && result?.todos) {
       messageContent = `${result.message}\n${
@@ -618,7 +681,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
 
     setMessages((prev) => [...prev, assistantMessage]);
 
-    const actionIcons = {
+    const actionIcons: Record<string, string> = {
       create: "✅ Added",
       complete: "☑️ Completed",
       update: "✏️ Updated",
@@ -651,7 +714,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
 
     try {
       await processVoiceCommand(currentInput);
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to process your request.",
@@ -670,12 +733,10 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
-      {/* Header */}
-      {/* TEST */}
-      {/* Connection Status Bar */}
-      <div className="border-b border-gray-700/50 bg-gray-900/70 px-4 py-2">
-        <div className="max-w-4xl  flex items-center gap-2">
+    <div className="flex flex-col h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
+      {/* Connection Status Bar - Mobile Optimized */}
+      <div className="border-b border-gray-700/50 bg-gray-900/70 px-3 py-2 sm:px-4">
+        <div className="flex items-center gap-2">
           <div
             className={`w-2 h-2 rounded-full ${
               isConnected ? "bg-green-400" : "bg-red-400"
@@ -687,37 +748,41 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
               : "Connecting to voice server..."}
           </span>
           {!isConnected && (
-            <span className="text-xs text-gray-500">(Using HTTP fallback)</span>
+            <span className="text-xs text-gray-500 hidden sm:inline">
+              (Using HTTP fallback)
+            </span>
           )}
         </div>
       </div>
-      <div className="border-b border-gray-700/50 p-2 bg-gray-900/50 backdrop-blur-xl">
-        <div className="max-w-4xl ">
-          <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+
+      {/* Header - Mobile Optimized */}
+      <div className="border-b border-gray-700/50 px-3 py-2 sm:p-4 bg-gray-900/50 backdrop-blur-xl">
+        <div className="w-full">
+          <h2 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
             AI Voice Assistant
           </h2>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="text-xs sm:text-sm text-gray-400 mt-1">
             Speak naturally to manage your todos
           </p>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto p-4 space-y-4">
+      {/* Messages - Mobile Optimized */}
+      <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="w-full px-3 py-2 sm:p-4 space-y-3 sm:space-y-4 pb-safe">
           {messages.length === 0 && (
-            <div className="text-center py-20">
-              <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 mb-6">
-                <Mic className="h-10 w-10 text-purple-400" />
+            <div className="text-center py-8 sm:py-20">
+              <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 mb-4 sm:mb-6">
+                <Mic className="h-8 w-8 sm:h-10 sm:w-10 text-purple-400" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-100 mb-3">
+              <h3 className="text-lg sm:text-2xl font-bold text-gray-100 mb-2 sm:mb-3">
                 Ready to assist you
               </h3>
-              <p className="text-gray-400 max-w-md mx-auto mb-8">
-                Click the microphone or type to manage your todos with natural
+              <p className="text-sm sm:text-base text-gray-400 max-w-md mx-auto mb-6 sm:mb-8 px-4">
+                Tap the microphone or type to manage your todos with natural
                 language
               </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-w-2xl mx-auto">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-3 max-w-2xl mx-auto px-4">
                 {[
                   "Add buy groceries",
                   "Complete first task",
@@ -728,7 +793,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
                 ].map((example, i) => (
                   <div
                     key={i}
-                    className="bg-gray-800/50 rounded-lg px-4 py-2 text-sm text-gray-400 border border-gray-700/50"
+                    className="bg-gray-800/50 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-400 border border-gray-700/50"
                   >
                     "{example}"
                   </div>
@@ -740,31 +805,31 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-3 ${
+              className={`flex gap-2 sm:gap-3 ${
                 message.type === "user" ? "justify-end" : "justify-start"
               }`}
             >
               <div
-                className={`flex gap-3 max-w-2xl ${
+                className={`flex gap-2 sm:gap-3 max-w-[85%] sm:max-w-2xl ${
                   message.type === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
                 <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                     message.type === "user"
                       ? "bg-gradient-to-br from-blue-500 to-purple-500"
                       : "bg-gradient-to-br from-gray-700 to-gray-600"
                   }`}
                 >
                   {message.type === "user" ? (
-                    <User className="h-4 w-4 text-white" />
+                    <User className="h-3 w-3 sm:h-4 sm:w-4 text-white" />
                   ) : (
-                    <Bot className="h-4 w-4 text-gray-300" />
+                    <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-gray-300" />
                   )}
                 </div>
 
                 <div
-                  className={`rounded-2xl px-5 py-3 ${
+                  className={`rounded-2xl px-3 py-2 sm:px-5 sm:py-3 ${
                     message.type === "user"
                       ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                       : "bg-gray-800 text-gray-100 border border-gray-700"
@@ -812,11 +877,11 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
           ))}
 
           {isProcessing && (
-            <div className="flex gap-3 justify-start">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center">
-                <Bot className="h-4 w-4 text-gray-300" />
+            <div className="flex gap-2 sm:gap-3 justify-start">
+              <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center">
+                <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-gray-300" />
               </div>
-              <div className="bg-gray-800 rounded-2xl px-5 py-3 border border-gray-700">
+              <div className="bg-gray-800 rounded-2xl px-3 py-2 sm:px-5 sm:py-3 border border-gray-700">
                 <div className="flex items-center gap-2">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 rounded-full bg-purple-400 animate-bounce" />
@@ -833,17 +898,19 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
         </div>
       </div>
 
-      {/* Input Area */}
-      <div className="border-t border-gray-700/50 bg-gray-900/50 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto p-4">
-          <div className="flex items-end gap-3">
+      {/* Input Area - Mobile Optimized */}
+      <div className="border-t border-gray-700/50 bg-gray-900/50 backdrop-blur-xl safe-area-bottom">
+        <div className="w-full p-3 sm:p-4">
+          <div className="flex items-end gap-2 sm:gap-3">
             <div className="flex-1">
               <Textarea
                 value={inputText}
-                onChange={(e: any) => setInputText(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                  setInputText(e.target.value)
+                }
                 onKeyPress={handleKeyPress}
-                placeholder="Type a command or click the mic to speak..."
-                className="min-h-[50px] max-h-32"
+                placeholder="Type a command or tap the mic to speak..."
+                className="min-h-[48px] max-h-32 text-base"
                 disabled={isProcessing || isRecording}
               />
             </div>
@@ -853,7 +920,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
               disabled={isProcessing}
               variant={isRecording ? "destructive" : "default"}
               size="default"
-              className="h-[50px] px-5"
+              className="h-[48px] px-3 sm:px-5 touch-manipulation"
             >
               <Mic className="h-5 w-5" />
             </Button>
@@ -863,7 +930,7 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
               disabled={!inputText.trim() || isProcessing || isRecording}
               variant="outline"
               size="default"
-              className="h-[50px] px-5"
+              className="h-[48px] px-3 sm:px-5 touch-manipulation"
             >
               <Send className="h-5 w-5" />
             </Button>
@@ -871,18 +938,18 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
         </div>
       </div>
 
-      {/* Voice Recording Modal */}
+      {/* Voice Recording Modal - Mobile Optimized */}
       {showVoiceModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-8 shadow-2xl border border-gray-700 max-w-md w-full">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4 safe-area-inset">
+          <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-700 max-w-sm w-full mx-4">
             <div className="flex flex-col items-center">
               <VoiceOrb isListening={isListening} isRecording={isRecording} />
 
-              <div className="mt-6 text-center">
-                <p className="text-xl font-semibold text-gray-100">
+              <div className="mt-4 sm:mt-6 text-center">
+                <p className="text-lg sm:text-xl font-semibold text-gray-100">
                   {isListening ? "Listening..." : "Speak now"}
                 </p>
-                <p className="text-sm text-gray-400 mt-2 min-h-[40px]">
+                <p className="text-sm text-gray-400 mt-2 min-h-[60px] sm:min-h-[40px] px-2">
                   {currentTranscript ||
                     "Say something like 'Add buy milk' or 'Show all todos'"}
                 </p>
@@ -894,13 +961,13 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
                 onClick={stopRecording}
                 variant="destructive"
                 size="lg"
-                className="mt-6 w-full rounded-xl"
+                className="mt-4 sm:mt-6 w-full rounded-xl touch-manipulation"
               >
                 <X className="h-5 w-5 mr-2" />
                 Stop Recording
               </Button>
 
-              <p className="text-xs text-gray-500 mt-3">
+              <p className="text-xs text-gray-500 mt-3 text-center">
                 Auto-stops after 2 seconds of silence
               </p>
             </div>
@@ -925,6 +992,57 @@ export default function VoiceChat({ onNotionPageCreated, currentPageId }: any) {
         }
         .animation-delay-200 {
           animation-delay: 200ms;
+        }
+
+        /* Mobile-specific optimizations */
+        @media (max-width: 640px) {
+          /* Ensure proper touch targets */
+          button {
+            min-height: 44px;
+            min-width: 44px;
+          }
+
+          /* Improve scrolling on mobile */
+          .overscroll-contain {
+            overscroll-behavior: contain;
+          }
+
+          /* Safe area support */
+          .safe-area-bottom {
+            padding-bottom: max(1rem, env(safe-area-inset-bottom));
+          }
+
+          .safe-area-inset {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+          }
+
+          .pb-safe {
+            padding-bottom: env(safe-area-inset-bottom);
+          }
+        }
+
+        /* Prevent zoom on input focus (iOS) */
+        @media (max-width: 640px) {
+          input,
+          textarea,
+          select {
+            font-size: 16px !important;
+          }
+        }
+
+        /* Improve touch responsiveness */
+        .touch-manipulation {
+          touch-action: manipulation;
+        }
+
+        /* Better visual feedback for touches */
+        @media (hover: none) and (pointer: coarse) {
+          button:active {
+            transform: scale(0.95);
+          }
         }
       `}</style>
     </div>
