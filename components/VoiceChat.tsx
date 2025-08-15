@@ -732,6 +732,20 @@ export default function VoiceChat({
     }
   };
 
+  const pasteSuggestion = (text: string) => {
+    setInputText(text);
+    // focus + put caret at the end (next tick so state is applied)
+    requestAnimationFrame(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+        const len = text.length;
+        inputRef.current.setSelectionRange?.(len, len);
+      }
+    });
+  };
+
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+
   return (
     <div className="flex flex-col h-full bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 overflow-hidden">
       {/* Connection Status Bar - Mobile Optimized */}
@@ -791,12 +805,15 @@ export default function VoiceChat({
                   "Update milk to oat milk",
                   "List pending tasks",
                 ].map((example, i) => (
-                  <div
+                  <button
                     key={i}
-                    className="bg-gray-800/50 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-400 border border-gray-700/50"
+                    type="button"
+                    onClick={() => pasteSuggestion(example)}
+                    className="w-full text-left bg-gray-800/50 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-300 border border-gray-700/50 hover:bg-gray-700/40 active:bg-gray-700 transition-colors"
+                    aria-label={`Use example: ${example}`}
                   >
-                    "{example}"
-                  </div>
+                    “{example}”
+                  </button>
                 ))}
               </div>
             </div>
@@ -904,6 +921,7 @@ export default function VoiceChat({
           <div className="flex items-end gap-2 sm:gap-3">
             <div className="flex-1">
               <Textarea
+                ref={inputRef}
                 value={inputText}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                   setInputText(e.target.value)
